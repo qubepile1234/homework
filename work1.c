@@ -1,7 +1,7 @@
 # include<stdio.h>
 #include <stdlib.h>
-void f1(int num);
-int f2(int n,int m);
+#include <sysinfoapi.h>
+int** f1(int num);
 int innum();
 int main(){
 	
@@ -9,7 +9,23 @@ int main(){
     	        int num=innum();
         printf("you input the num is %d\n",num);
         if (num<=0)printf("the input is falied ,the error code is%d\n",num);
-        else f1(num);
+        else {	
+		int **a=f1(num);
+		if(a==NULL) return -1;
+		for(int i=0;i<num;i++){
+			for(int j=0;j<num;j++){
+			printf("  %d",a[i][j]);
+		}
+        	printf("\n");
+		}
+		free(a);
+	    long long int begin2 = GetTickCount64();
+		for(int i=0;i<10000;i++){free(f1(num));}
+        long long int end2 = GetTickCount64();
+	    double elapsed2 = (end2 - begin2)*1e-3;
+		printf("Time measured: %.7f seconds.\n", elapsed2/10000);
+
+}
 		}
 }
 
@@ -25,14 +41,14 @@ int innum()
 			}
 	    else return n;
 }
-void f1(int num)
+int** f1(int num)
 {
 //	int a[num][num];
 // int a[4][4];num=4;
 int * * a=(int **)malloc(num * sizeof(int *));
 if(a==NULL){
 	printf("the mem allocation failed\n");
-	return;
+	return NULL;
 
 }
     for (int i = 0; i < num; i++) {
@@ -43,10 +59,10 @@ if(a==NULL){
                 free(a[j]);
             }
             free(a);
-            return;
+            return NULL;
         }
     }
-	int ** temppoint=a;
+	// int ** temppoint=a;
 	int i=0,j=0,c=num*num;
 	int all;
 	int temp_int=num;
@@ -83,14 +99,15 @@ if(a==NULL){
 //		scanf("%d",&num);
 	// printf("please intput a number\n");
 	}
-	a=temppoint;
+	// a=temppoint;
 	num=temp_int;
-	for(int i=0;i<num;i++){
-		for(int j=0;j<num;j++){
-		printf("  %d",a[i][j]);
-	}
-	printf("\n");
-	}
+	// for(int i=0;i<num;i++){
+	// 	for(int j=0;j<num;j++){
+	// 	printf("  %d",a[i][j]);
+	// }
+	// printf("\n");
+	// }
+	return a;
 }
     
 
