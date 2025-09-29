@@ -6,7 +6,7 @@
 OP** f1(int num,OP normal,OP different); 
  //生成一个num*num的方阵，op为其中元素的数据类型，返回op**,支持方阵中有一个随机位置的特殊元素
  //随机位置由此实现    srand((unsigned)time(NULL));   int random = rand()%num*num;
-void release_aquare(int num,OP** op);
+void release_square(int num,OP** op);
 void  release_print_square(int num,OP** op);
 void print_square(int num,OP** op);
  //打印出op方阵
@@ -17,7 +17,7 @@ void print_square(int num,OP** op);
 #define testtime2       long long int end2 = GetTickCount64();	    double elapsed2 = (end2 - begin2)*1e-3;		printf("Time measured: %.7f seconds.\n", elapsed2/10000);
 //配合void print_square(int num,OP**);使用，打印你想要的类型ther为你想要的printf中的内容
 int innum();
-void fillsquare(int num,OP normal,OP different,OP** op);
+void fillsquare(int num,OP normal,OP different,OP** op,int num_origin,int,int,int,int);
 
 int main(){	
     	while(1){
@@ -28,9 +28,25 @@ int main(){
 			{	
 	    OP** op=f1(num,TRUE,FALSE);
         if(op==NULL) return -1;
-        fillsquare(num,TRUE,FALSE,op);
-		release_aquare(num,op);
-	    testtime1{OP** optest=f1(num,TRUE,FALSE); release_print_square(num,optest);}testtime2
+		print_square(num,op);
+        fillsquare(num,TRUE,FALSE,op,num,0,0,-1,-1);
+		release_square(num,op);
+	    testtime1{
+			OP** optest=f1(num,TRUE,FALSE);
+		    if(optest==NULL){return -1;}
+            fillsquare(num,TRUE,FALSE,op,num,0,0,-1,-1);
+		    release_square(num,optest);
+		         }testtime2
+		//  long long int begin2 = GetTickCount64();
+		// for(int i=0;i<1000;i++){
+        //   OP** optest=f1(num,TRUE,FALSE);
+		//   if(optest==NULL){return -1;}
+        // fillsquare(num,TRUE,FALSE,op,num,0,0);
+		//    release_square(num,optest);
+		//  }
+		//  long long int end2 = GetTickCount64();
+	    // double elapsed2 = (end2 - begin2)*1e-3;
+		// 		printf("Time measured: %.14f seconds.\n", elapsed2/1000);
             }
 		}
 }
@@ -77,43 +93,104 @@ OP** f1(int num,OP normal,OP different)
 		}
 	}
     srand((unsigned)time(NULL));
-    int random = rand()%num*num;
+    int random = rand()%(num*num);
 	square[random/num][random%num]=different;
+	// printf("%d  %d   %d",random/num,random%num,random); 测试用
 	return square;
 }
-
-int the_num_in_fillsquare;
-void fillsquare(int num,OP normal,OP different,OP** op){
+/// @brief 
+/// @details print_square(num_origin,op);//呈现过程
+/// @param num 本次问题的规模
+/// @param normal 
+/// @param different 
+/// @param op **
+/// @param num_origin 问题原本的规模，用于打印求解过程用
+/// @param beginfrom_i 为了处理四个子问题的工具
+/// @param beginfrom_j 同理
+/// @param pointx 特殊点x
+/// @param pointy 特殊点y
+void fillsquare(int num,OP normal,OP different,OP** op,int num_origin,int beginfrom_i,int beginfrom_j,int pointx,int pointy){
     int ii,jj;
 	int count=0;
+if(pointx==-1&&pointy==-1){//特殊点未知
 	for(int i=0;i<num;i++){
 		for(int j=0;j<num;j++){
-			if(op[i][j]==different){
+			if(op[i+beginfrom_i][j+beginfrom_j]==different){
 				ii=i;jj=j;
+				pointx=i+beginfrom_i;pointy=j+beginfrom_j;
 				count++;
-                // op[num][num+jj]=different;
-				// op[num+ii][num]=different;
 			}
 		}
-	 }
+	 }}
+	 else {ii=pointx-beginfrom_i;jj=pointy-beginfrom_j;count++;}
+	 //特殊点已知
 	 if(count>1){printf("error,the code is count-1");system("pause");}
+	 if(count==0||num==1){return;}
 	 num=num>>1;
-				if(ii>num){op[num][num]=different;op[num][num+1]=different;}
-				else{op[num+1][num]=different;op[num+1][num+1]=different;}
-                if(jj>num){op[num][num]=different;op[num+1][num]=different;}
-				else{op[num][num+1]=different;op[num+1][num+1]=different;}
-			print_square(the_num_in_fillsquare<<1,op);
-			if(num==0){return;}
-			fillsquare(num,normal,different,op);
+	 //这里的num是数组的num*num,而不是数组从零开始计数应有的位置
+	 int type=0;
+	 num--;
+				if(ii>num){op[num+beginfrom_i][num+beginfrom_j]=different;
+					op[num+beginfrom_i][num+beginfrom_j+1]=different;
+					type++;type++;}//特殊点在三四象限
+				else{op[num+beginfrom_i+1][num+beginfrom_j]=different;
+					op[num+beginfrom_i+1][num+beginfrom_j+1]=different;}
+                if(jj>num){op[num+beginfrom_i][num+beginfrom_j]=different;
+					op[num+beginfrom_i+1][num+beginfrom_j]=different;
+				type++;}//特殊点在一四象限
+				else{op[num+beginfrom_i][num+beginfrom_j+1]=different;
+					op[num+beginfrom_i+1][num+beginfrom_j+1]=different;}
+	num++;
+
+
+
+
+			//  print_square(num_origin,op);//呈现过程
+			
+			
+			
+			
+			 if(num==0){return;}
+
+			switch (type)
+			{
+			case 0:
+			{fillsquare(num,normal,different,op,num_origin,beginfrom_i+0,beginfrom_j+0,pointx,pointy);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i,beginfrom_j+num,num-1+beginfrom_i,num+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j,num+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j+num,num+beginfrom_i,num+beginfrom_j);}
+				break;
+			case 1:
+			{fillsquare(num,normal,different,op,num_origin,beginfrom_i+0,beginfrom_j+0,num-1+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i,beginfrom_j+num,pointx,pointy);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j,num+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j+num,num+beginfrom_i,num+beginfrom_j);}
+			    break;
+            case 2:
+			{fillsquare(num,normal,different,op,num_origin,beginfrom_i+0,beginfrom_j+0,num-1+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i,beginfrom_j+num,num-1+beginfrom_i,num+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j,pointx,pointy);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j+num,num+beginfrom_i,num+beginfrom_j);}
+			    break;
+            case 3:
+			{fillsquare(num,normal,different,op,num_origin,beginfrom_i+0,beginfrom_j+0,num-1+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i,beginfrom_j+num,num-1+beginfrom_i,num+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j,num+beginfrom_i,num-1+beginfrom_j);
+			fillsquare(num,normal,different,op,num_origin,beginfrom_i+num,beginfrom_j+num,pointx,pointy);}
+			     break;
+			default:
+			system("pause");
+				break;
+			}
 }
 /// @brief release_aquare
 /// @param num 
 /// @param op 
-void release_aquare(int num,OP** op){
+void release_square(int num,OP** op){
 	      for(int i=0;i<num;i++){
 			for(int j=0;j<num;j++){
-             free(op[i][j]);
 			}
+			free(op[i]);
 	  }
 	  free(op);
 }
@@ -121,12 +198,12 @@ void release_aquare(int num,OP** op){
 /// @param num 
 /// @param op 
 void  print_square(int num,OP** op){
+printf("the square is :\n");
       for(int i=0;i<num;i++){
 			for(int j=0;j<num;j++){
-				printf("the square is :");
 				printf(THER,op[i][j]);
 			}
-			printf("/n");
+			printf("\n");
 	  }
 }
 /// @brief release_print_square
@@ -137,9 +214,9 @@ void  release_print_square(int num,OP** op){
 			for(int j=0;j<num;j++){
 				printf("the square is :");
 				printf(THER,op[i][j]);
-				free(op[i][j]);
 			}
-         printf("/n");
+			free(op[i]);
+         printf("\n");
 	  }
 	  free(op);
 }
